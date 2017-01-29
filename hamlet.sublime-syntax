@@ -9,6 +9,14 @@ contexts:
   main:
     - include: quote-detection
     - include: interp
+    - match: (?i)(\s*)<(script)[^>]*>\s*\n
+      push: script
+      captures:
+        2: entity.name.tag.inline.script.html
+    - match: (?i)(\s*)<(style)[^>]*>\s*\n
+      push: style
+      captures:
+        2: entity.name.tag.inline.style.html
     - match: ([0-9]+)
       scope: constant.numeric.hamlet
     - match: <!--
@@ -25,6 +33,16 @@ contexts:
         pop: true
     - match: (^\s*\\|\#\s*\n)
       scope: constant.character.escape.hamlet
+  script:
+    - meta_scope: javascriptcontext
+    - match: ^(?!(?:\s\1.*|\s*)$\n)
+      pop: true
+    - include: Packages/JavaScript/JavaScript.sublime-syntax
+  style:
+    - meta_scope: csscontext
+    - match: ^(?!(?:\s\1.*|\s*)$\n)
+      pop: true
+    - include: Packages/CSS/CSS.sublime-syntax
   interp:
     - match: "(#|@\\??|\\^){"
       scope: support.constant.hamlet
