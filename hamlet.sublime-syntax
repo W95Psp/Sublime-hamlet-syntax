@@ -1,0 +1,98 @@
+%YAML 1.2
+---
+name: Hamlet
+file_extensions: [hamlet]
+scope: source.hamlet
+variables: 
+  clTag: >
+contexts:
+  main:
+    - include: quote-detection
+    - include: interp
+    - match: ([0-9]+)
+      scope: constant.numeric.hamlet
+    - match: <!--
+      set: comment
+    - match: (?i)<\s*([a-z]+)
+      captures:
+          1: entity.name.tag.inline.any.html
+      push: tag
+    - match: \s*\$(if|elseif|else|maybe|nothing|forall|case|of|with|doctype)
+      scope: keyword.control.hamlet
+      push:
+      - include: "Packages/SublimeHaskell/Syntaxes/Haskell-SublimeHaskell.tmLanguage"
+      - match: \n
+        pop: true
+    - match: (^\s*\\|\#\s*\n)
+      scope: constant.character.escape.hamlet
+  interp:
+    - match: "(#|@\\??|\\^){"
+      scope: support.constant.hamlet
+      push:
+      - include: "Packages/SublimeHaskell/Syntaxes/Haskell-SublimeHaskell.tmLanguage"
+      - match: "}"
+        scope: support.constant.hamlet
+        pop: true
+  quote-detection:
+    - match: '"'
+      push: doublequote
+    - match: "'"
+      push: simplequote
+  doublequote:
+    - include: interp
+    - meta_scope: string.double.hamlet
+    - match: '"'
+      pop: true
+  simplequote:
+    - include: interp
+    - meta_scope: string.single.hamlet
+    - match: "'"
+      pop: true
+  comment:
+    - meta_scope: comment.block.hamlet
+    - match: -->
+      pop: true
+  tag:
+    - include: quote-detection
+    - meta_scope: meta.tag.inline.any.hamlet
+    - match: '/>'
+      set: no-content-tag
+    - match: '>'
+      set: content-tag
+    - match: (?i)([.\#]?\b[a-z\-]*)
+      captures:
+        1: entity.other.attribute-name.html
+      push: tag-attribute
+    - match: ":(?=[^:])"
+      scope: keyword.operator.hamlet
+      push: tag-conditionnal
+    - match: "\\*{"
+      scope: support.constant.hamlet
+      push:
+      - include: "Packages/SublimeHaskell/Syntaxes/Haskell-SublimeHaskell.tmLanguage"
+      - match: "}"
+        scope: support.constant.hamlet
+        pop: true
+  tag-conditionnal:
+    - meta_scope: entity.other.conditionnalstructuretag.hamlet
+    - include: "Packages/SublimeHaskell/Syntaxes/Haskell-SublimeHaskell.tmLanguage"
+    - match: ".(:)"
+      captures:
+        1: keyword.operator.hamlet
+      pop: true
+  tag-attribute:
+    - include: interp
+    - include: quote-detection
+    - meta_scope: entity.other.attribute.html
+    - match: "({{clTag}}|\\s|\\.)"
+      pop: true
+  content-tag:
+    - include: interp
+    - include: "Packages/HTML/HTML.sublime-syntax"
+    - match: \n
+      pop: true
+  no-content-tag:
+    - match: \n
+      pop: true
+    - match: \S+
+      scope: invalid.illegal.content-on-closing-tag.hamlet
