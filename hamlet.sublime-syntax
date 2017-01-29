@@ -21,7 +21,7 @@ contexts:
       scope: constant.numeric.hamlet
     - match: <!--
       set: comment
-    - match: (?i)<\s*([a-z]+)
+    - match: (?i)<\s*([a-z0-9]+)
       captures:
           1: entity.name.tag.inline.any.html
       push: tag
